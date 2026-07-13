@@ -160,6 +160,34 @@ If you want to update instantly, you can check out the [GitHub documentation](ht
 
 You can star or watch this project or follow author to get release notifications in time.
 
+
+## Vercel 環境変数の設定手順（家族向け運用）
+
+この Fork を Vercel で運用する場合、API キーはソースコードや `.env` ファイルに書き込まず、Vercel の Project Settings から環境変数として設定してください。
+
+1. Vercel の対象 Project を開き、**Settings** → **Environment Variables** に移動します。
+2. 家族だけが利用できるように、任意の共有パスワードを `CODE` に設定します。複数のパスワードを使う場合は `family1,family2` のようにカンマ区切りで入力します。
+3. OpenAI を利用する場合は `OPENAI_API_KEY` に OpenAI API キーを設定します。複数キーをローテーションしたい場合はカンマ区切りで入力できます。
+4. Anthropic Claude を利用する場合は `ANTHROPIC_API_KEY` に Anthropic API キーを設定します。必要に応じて `ANTHROPIC_URL` や `ANTHROPIC_API_VERSION` も設定します。
+5. 家族が各自の API キーを画面から入力できないようにしたい場合は、`HIDE_USER_API_KEY` に `1` を設定します。
+6. 変数を追加・変更したら、Vercel の **Deployments** から最新デプロイを **Redeploy** して反映します。
+
+注意: API キーやアクセス用 `CODE` は秘密情報です。README、ソースコード、`public/` 配下、Git にコミットされる `.env` ファイルには実値を記載しないでください。
+
+
+
+### 家族向けモデルプリセット
+
+通常のモデル一覧は、Anthropic と OpenAI から日常利用向けの松・竹・梅だけを表示する方針です。Anthropic を先に表示し、`claude-opus-4-5`（松: 高性能で比較的利用できる可能性が高い Opus）、`claude-sonnet-4-5`（竹: 性能と価格のバランス、Claude 5 に未アクセスの環境向け）、`claude-haiku-4-5`（梅: 低価格・高速）を使います。OpenAI は `gpt-5.6-sol`（松: 最高性能）、`gpt-5.6-terra`（竹: 性能と価格のバランス）、`gpt-5.6-luna`（梅: 低価格・高速）を使います。
+
+デフォルトの選択モデルは、品質と価格のバランスを優先して Claude の竹モデル `claude-sonnet-4-5@anthropic` にしています。このデフォルトで使う場合は Vercel に `ANTHROPIC_API_KEY` を設定してください。
+
+将来モデルを差し替える場合は、まず Vercel の環境変数 `CUSTOM_MODELS` と `DEFAULT_MODEL` の利用を検討してください。例: `CUSTOM_MODELS=-all,+new-model@openai,+new-claude@anthropic` のように既定モデルを非表示にして追加できます。デフォルトの選択モデルは `DEFAULT_MODEL=new-model@openai` のように指定できます。
+
+### ESLint の暫定対応メモ
+
+`app/constant.ts` では `unused-imports/no-unused-imports` が lint 実行時にクラッシュするため、現在は `.eslintrc.json` の `overrides` で同ファイルのみ一時的にルールを無効化しています。依存関係は変更していません。今後 `@typescript-eslint/eslint-plugin` を導入できる環境になったら、この override を外せるか再検証してください。
+
 ## Access Password
 
 This project provides limited access control. Please add an environment variable named `CODE` on the vercel environment variables page. The value should be passwords separated by comma like this:
