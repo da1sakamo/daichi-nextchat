@@ -12,7 +12,11 @@ import { auth } from "./auth";
 import { isModelNotavailableInServer } from "@/app/utils/model";
 import { cloudflareAIGatewayUrl } from "@/app/utils/cloudflare";
 
-const ALLOWD_PATH = new Set([Anthropic.ChatPath, Anthropic.ChatPath1]);
+const ALLOWD_PATH = new Set([
+  Anthropic.ChatPath,
+  Anthropic.ChatPath1,
+  Anthropic.ModelsPath,
+]);
 
 export async function handle(
   req: NextRequest,
@@ -57,15 +61,25 @@ export async function handle(
 
 const serverConfig = getServerSideConfig();
 
+function trimBearerToken(token: string | null | undefined) {
+  return (
+    token
+      ?.trim()
+      .replace(/^Bearer\s+/i, "")
+      .trim() || ""
+  );
+}
+
 async function request(req: NextRequest) {
   const controller = new AbortController();
 
   let authHeaderName = "x-api-key";
-  let authValue =
-    req.headers.get(authHeaderName) ||
-    req.headers.get("Authorization")?.replaceAll("Bearer ", "").trim() ||
-    serverConfig.anthropicApiKey ||
-    "";
+  const userApiKey = trimBearerToken(req.headers.get(authHeaderName));
+  const authorizationApiKey = trimBearerToken(req.headers.get("Authorization"));
+  const systemApiKey = trimBearerToken(serverConfig.anthropicApiKey);
+  let authValue = serverConfig.hideUserApiKey
+    ? systemApiKey
+    : userApiKey || authorizationApiKey || systemApiKey;
 
   let path = `${req.nextUrl.pathname}`.replaceAll(ApiPath.Anthropic, "");
 
