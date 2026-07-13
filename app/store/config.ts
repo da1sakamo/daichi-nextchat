@@ -66,6 +66,8 @@ export const DEFAULT_CONFIG = {
   modelConfig: {
     model: "claude-sonnet-4-5" as ModelType,
     providerName: "Anthropic" as ServiceProvider,
+    model: "gpt-5.6-terra" as ModelType,
+    providerName: "OpenAI" as ServiceProvider,
     temperature: 0.5,
     top_p: 1,
     max_tokens: 4000,

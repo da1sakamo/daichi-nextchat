@@ -21,6 +21,9 @@ describe("collectModelTableWithDefaultModel", () => {
       "claude-sonnet-4-5",
     );
     expect(table["claude-sonnet-4-5@anthropic"].isDefault).toBe(true);
+      "gpt-5.6-terra",
+    );
+    expect(table["gpt-5.6-terra@openai"].isDefault).toBe(true);
   });
 
   test("flags exactly one model as default", () => {

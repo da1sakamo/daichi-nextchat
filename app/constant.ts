@@ -526,6 +526,8 @@ const googleModels = [
 const anthropicModels = [
   "claude-opus-4-5",
   "claude-sonnet-4-5",
+  "claude-fable-5",
+  "claude-sonnet-5",
   "claude-haiku-4-5",
 ];
 
@@ -690,6 +692,17 @@ const ai302Models = [
 
 let seq = 1000; // 内置的模型序号生成器从1000开始
 export const DEFAULT_MODELS = [
+  ...openaiModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++, // Global sequence sort(index)
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+      sorted: 1, // 这里是固定的，确保顺序与之前内置的版本一致
+    },
+  })),
   ...anthropicModels.map((name) => ({
     name,
     available: true,
@@ -710,6 +723,7 @@ export const DEFAULT_MODELS = [
       providerName: "OpenAI",
       providerType: "openai",
       sorted: 2,
+      sorted: 4,
     },
   })),
 ] as const;
