@@ -113,6 +113,12 @@ const ACCESS_CODES = (function getAccessCodes(): Set<string> {
   }
 })();
 
+function maskSecret(secret: string) {
+  if (!secret) return "";
+  if (secret.length <= 8) return "****";
+  return `${secret.slice(0, 4)}****${secret.slice(-4)}`;
+}
+
 function getApiKey(keys?: string) {
   const apiKeyEnvVar = keys ?? "";
   const apiKeys = apiKeyEnvVar.split(",").map((v) => v.trim());
@@ -122,7 +128,7 @@ function getApiKey(keys?: string) {
     console.log(
       `[Server Config] using ${randomIndex + 1} of ${
         apiKeys.length
-      } api key - ${apiKey}`,
+      } api key - ${maskSecret(apiKey)}`,
     );
   }
 
