@@ -504,6 +504,18 @@ export function ChatActions(props: {
   setUserInput: (input: string) => void;
   setShowChatSidePanel: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const {
+    setAttachImages,
+    setUploading,
+    hitBottom,
+    scrollToBottom,
+    showPromptModal,
+    showPromptHints,
+    uploadImage,
+    uploading,
+    setShowShortcutKeyModal,
+    setShowChatSidePanel,
+  } = props;
   const config = useAppConfig();
   const navigate = useNavigate();
   const chatStore = useChatStore();
@@ -573,8 +585,8 @@ export function ChatActions(props: {
     const show = isVisionModel(currentModel);
     setShowUploadImage(show);
     if (!show) {
-      props.setAttachImages([]);
-      props.setUploading(false);
+      setAttachImages([]);
+      setUploading(false);
     }
 
     // if current model is not available
@@ -594,7 +606,7 @@ export function ChatActions(props: {
           : nextModel.name,
       );
     }
-  }, [chatStore, currentModel, models, session]);
+  }, [chatStore, currentModel, models, session, setAttachImages, setUploading]);
 
   return (
     <div className={styles["chat-input-actions"]}>
@@ -606,16 +618,16 @@ export function ChatActions(props: {
             icon={<StopIcon />}
           />
         )}
-        {!props.hitBottom && (
+        {!hitBottom && (
           <ChatAction
-            onClick={props.scrollToBottom}
+            onClick={scrollToBottom}
             text={Locale.Chat.InputActions.ToBottom}
             icon={<BottomIcon />}
           />
         )}
-        {props.hitBottom && (
+        {hitBottom && (
           <ChatAction
-            onClick={props.showPromptModal}
+            onClick={showPromptModal}
             text={Locale.Chat.InputActions.Settings}
             icon={<SettingsIcon />}
           />
@@ -623,9 +635,9 @@ export function ChatActions(props: {
 
         {showUploadImage && (
           <ChatAction
-            onClick={props.uploadImage}
+            onClick={uploadImage}
             text={Locale.Chat.InputActions.UploadImage}
-            icon={props.uploading ? <LoadingButtonIcon /> : <ImageIcon />}
+            icon={uploading ? <LoadingButtonIcon /> : <ImageIcon />}
           />
         )}
         <ChatAction
@@ -645,7 +657,7 @@ export function ChatActions(props: {
         />
 
         <ChatAction
-          onClick={props.showPromptHints}
+          onClick={showPromptHints}
           text={Locale.Chat.InputActions.Prompt}
           icon={<PromptIcon />}
         />
@@ -827,7 +839,7 @@ export function ChatActions(props: {
 
         {!isMobileScreen && (
           <ChatAction
-            onClick={() => props.setShowShortcutKeyModal(true)}
+            onClick={() => setShowShortcutKeyModal(true)}
             text={Locale.Chat.ShortcutKey.Title}
             icon={<ShortcutkeyIcon />}
           />
@@ -837,7 +849,7 @@ export function ChatActions(props: {
       <div className={styles["chat-input-actions-end"]}>
         {config.realtimeConfig.enable && (
           <ChatAction
-            onClick={() => props.setShowChatSidePanel(true)}
+            onClick={() => setShowChatSidePanel(true)}
             text={"Realtime Chat"}
             icon={<HeadphoneIcon />}
           />
@@ -1008,16 +1020,16 @@ function _Chat() {
           (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
       ) <= 1
     : false;
-  const isAttachWithTop = useMemo(() => {
-    const lastMessage = scrollRef.current?.lastElementChild as HTMLElement;
-    // if scrolllRef is not ready or no message, return false
-    if (!scrollRef?.current || !lastMessage) return false;
+  const lastMessage = scrollRef.current?.lastElementChild as HTMLElement;
+  const isAttachWithTop = (() => {
+    // if scrollRef is not ready or no message, return false
+    if (!scrollRef.current || !lastMessage) return false;
     const topDistance =
-      lastMessage!.getBoundingClientRect().top -
+      lastMessage.getBoundingClientRect().top -
       scrollRef.current.getBoundingClientRect().top;
     // leave some space for user question
     return topDistance < 100;
-  }, [scrollRef?.current?.scrollHeight]);
+  })();
 
   const isTyping = userInput !== "";
 
@@ -1986,6 +1998,7 @@ function _Chat() {
                               defaultShow={i >= messages.length - 6}
                             />
                             {getMessageImages(message).length == 1 && (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 className={styles["chat-message-item-image"]}
                                 src={getMessageImages(message)[0]}
@@ -2005,6 +2018,7 @@ function _Chat() {
                                 {getMessageImages(message).map(
                                   (image, index) => {
                                     return (
+                                      // eslint-disable-next-line @next/next/no-img-element
                                       <img
                                         className={
                                           styles[
