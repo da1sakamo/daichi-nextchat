@@ -722,7 +722,6 @@ export const DEFAULT_MODELS = [
       id: "openai",
       providerName: "OpenAI",
       providerType: "openai",
-      sorted: 2,
       sorted: 4,
     },
   })),
