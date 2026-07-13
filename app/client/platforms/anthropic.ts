@@ -1,5 +1,11 @@
 import { Anthropic, ApiPath } from "@/app/constant";
-import { ChatOptions, getHeaders, LLMApi, SpeechOptions } from "../api";
+import {
+  ChatOptions,
+  getHeaders,
+  LLMApi,
+  LLMModel,
+  SpeechOptions,
+} from "../api";
 import {
   useAccessStore,
   useAppConfig,
@@ -72,6 +78,18 @@ const ClaudeMapper = {
 } as const;
 
 const keys = ["claude-2, claude-instant-1"];
+
+const CLAUDE_MODELS_WITHOUT_SAMPLING_PARAMS = [
+  "claude-fable-5",
+  "claude-opus-4-8",
+  "claude-sonnet-5",
+];
+
+function shouldOmitSamplingParams(model: string) {
+  return CLAUDE_MODELS_WITHOUT_SAMPLING_PARAMS.some((prefix) =>
+    model.startsWith(prefix),
+  );
+}
 
 export class ClaudeApi implements LLMApi {
   speech(options: SpeechOptions): Promise<ArrayBuffer> {
@@ -185,11 +203,13 @@ export class ClaudeApi implements LLMApi {
 
       model: modelConfig.model,
       max_tokens: modelConfig.max_tokens,
-      temperature: modelConfig.temperature,
-      top_p: modelConfig.top_p,
-      // top_k: modelConfig.top_k,
-      top_k: 5,
     };
+
+    if (!shouldOmitSamplingParams(modelConfig.model)) {
+      requestBody.temperature = modelConfig.temperature;
+      requestBody.top_p = modelConfig.top_p;
+      requestBody.top_k = 5;
+    }
 
     const path = this.path(Anthropic.ChatPath);
 
@@ -224,7 +244,11 @@ export class ClaudeApi implements LLMApi {
           let chunkJson:
             | undefined
             | {
-                type: "content_block_delta" | "content_block_stop" | "message_delta" | "message_stop";
+                type:
+                  | "content_block_delta"
+                  | "content_block_stop"
+                  | "message_delta"
+                  | "message_stop";
                 content_block?: {
                   type: "tool_use";
                   id: string;
@@ -243,8 +267,11 @@ export class ClaudeApi implements LLMApi {
           // Handle refusal stop reason in message_delta
           if (chunkJson?.delta?.stop_reason === "refusal") {
             // Return a message to display to the user
-            const refusalMessage = "\n\n[Assistant refused to respond. Please modify your request and try again.]";
-            options.onError?.(new Error("Content policy violation: " + refusalMessage));
+            const refusalMessage =
+              "\n\n[Assistant refused to respond. Please modify your request and try again.]";
+            options.onError?.(
+              new Error("Content policy violation: " + refusalMessage),
+            );
             return refusalMessage;
           }
 
@@ -346,45 +373,46 @@ export class ClaudeApi implements LLMApi {
       total: 0,
     };
   }
-  async models() {
-    // const provider = {
-    //   id: "anthropic",
-    //   providerName: "Anthropic",
-    //   providerType: "anthropic",
-    // };
+  async models(): Promise<LLMModel[]> {
+    const provider = {
+      id: "anthropic",
+      providerName: "Anthropic",
+      providerType: "anthropic",
+      sorted: 1,
+    };
 
-    return [
-      // {
-      //   name: "claude-instant-1.2",
-      //   available: true,
-      //   provider,
-      // },
-      // {
-      //   name: "claude-2.0",
-      //   available: true,
-      //   provider,
-      // },
-      // {
-      //   name: "claude-2.1",
-      //   available: true,
-      //   provider,
-      // },
-      // {
-      //   name: "claude-3-opus-20240229",
-      //   available: true,
-      //   provider,
-      // },
-      // {
-      //   name: "claude-3-sonnet-20240229",
-      //   available: true,
-      //   provider,
-      // },
-      // {
-      //   name: "claude-3-haiku-20240307",
-      //   available: true,
-      //   provider,
-      // },
-    ];
+    try {
+      const res = await fetch(this.path(Anthropic.ModelsPath), {
+        method: "GET",
+        headers: {
+          ...getHeaders(),
+          "anthropic-version": useAccessStore.getState().anthropicApiVersion,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch Anthropic models: ${res.status}`);
+      }
+
+      const resJson = (await res.json()) as {
+        data?: Array<{ id?: string; display_name?: string }>;
+      };
+
+      return (resJson.data ?? [])
+        .filter((model): model is { id: string; display_name?: string } =>
+          Boolean(model.id),
+        )
+        .map((model, index) => ({
+          name: model.id,
+          displayName: model.display_name || model.id,
+          available: true,
+          sorted: index,
+          provider,
+        }));
+    } catch (error) {
+      console.warn("[Anthropic] Failed to fetch model list", error);
+      return [];
+    }
   }
   path(path: string): string {
     const accessStore = useAccessStore.getState();

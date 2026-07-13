@@ -282,6 +282,8 @@ export function RealtimeChat({
       audioHandlerRef.current?.close().catch(console.error);
       disconnect();
     };
+    // Intentionally run once on mount; the initialization guard prevents duplicate setup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

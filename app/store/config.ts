@@ -64,8 +64,6 @@ export const DEFAULT_CONFIG = {
   models: DEFAULT_MODELS as any as LLMModel[],
 
   modelConfig: {
-    model: "claude-sonnet-4-5" as ModelType,
-    providerName: "Anthropic" as ServiceProvider,
     model: "gpt-5.6-terra" as ModelType,
     providerName: "OpenAI" as ServiceProvider,
     temperature: 0.5,
@@ -177,9 +175,14 @@ export const useAppConfig = createPersistStore(
 
       const oldModels = get().models;
       const modelMap: Record<string, LLMModel> = {};
+      const fetchedProviderIds = new Set(
+        newModels.map((model) => model.provider?.id).filter(Boolean),
+      );
 
       for (const model of oldModels) {
-        model.available = false;
+        if (fetchedProviderIds.has(model.provider?.id)) {
+          model.available = false;
+        }
         modelMap[`${model.name}@${model?.provider?.id}`] = model;
       }
 

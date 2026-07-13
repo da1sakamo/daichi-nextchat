@@ -171,6 +171,7 @@ export const Stability = {
 export const Anthropic = {
   ChatPath: "v1/messages",
   ChatPath1: "v1/complete",
+  ModelsPath: "v1/models",
   ExampleEndpoint: "https://api.anthropic.com",
   Vision: "2023-06-01",
 };
@@ -524,11 +525,10 @@ const googleModels = [
 ];
 
 const anthropicModels = [
-  "claude-opus-4-5",
-  "claude-sonnet-4-5",
   "claude-fable-5",
+  "claude-opus-4-8",
   "claude-sonnet-5",
-  "claude-haiku-4-5",
+  "claude-haiku-4-5-20251001",
 ];
 
 const baiduModels = [
@@ -722,7 +722,6 @@ export const DEFAULT_MODELS = [
       id: "openai",
       providerName: "OpenAI",
       providerType: "openai",
-      sorted: 2,
       sorted: 4,
     },
   })),
