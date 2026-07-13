@@ -524,6 +524,8 @@ const googleModels = [
 ];
 
 const anthropicModels = [
+  "claude-opus-4-5",
+  "claude-sonnet-4-5",
   "claude-fable-5",
   "claude-sonnet-5",
   "claude-haiku-4-5",
@@ -709,6 +711,18 @@ export const DEFAULT_MODELS = [
       id: "anthropic",
       providerName: "Anthropic",
       providerType: "anthropic",
+      sorted: 1,
+    },
+  })),
+  ...openaiModels.map((name) => ({
+    name,
+    available: true,
+    sorted: seq++, // Global sequence sort(index)
+    provider: {
+      id: "openai",
+      providerName: "OpenAI",
+      providerType: "openai",
+      sorted: 2,
       sorted: 4,
     },
   })),

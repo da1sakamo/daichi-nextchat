@@ -177,9 +177,8 @@ You can star or watch this project or follow author to get release notifications
 
 
 ### 家族向けモデルプリセット
-
+デフォルトの選択モデルは、品質と価格のバランスを優先して Claude の竹モデル `claude-sonnet-4-5@anthropic` にしています。このデフォルトで使う場合は Vercel に `ANTHROPIC_API_KEY` を設定してください。
 通常のモデル一覧は、OpenAI と Anthropic から日常利用向けの松・竹・梅だけを表示する方針です。OpenAI は `gpt-5.6-sol`（松: 最高性能）、`gpt-5.6-terra`（竹: 性能と価格のバランス）、`gpt-5.6-luna`（梅: 低価格・高速）を使います。Anthropic は `claude-fable-5`（松: 最高性能）、`claude-sonnet-5`（竹: 性能と価格のバランス）、`claude-haiku-4-5`（梅: 低価格・高速）を使います。
-
 将来モデルを差し替える場合は、まず Vercel の環境変数 `CUSTOM_MODELS` と `DEFAULT_MODEL` の利用を検討してください。例: `CUSTOM_MODELS=-all,+new-model@openai,+new-claude@anthropic` のように既定モデルを非表示にして追加できます。デフォルトの選択モデルは `DEFAULT_MODEL=new-model@openai` のように指定できます。
 
 ### ESLint の暫定対応メモ
