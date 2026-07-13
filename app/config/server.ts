@@ -43,6 +43,7 @@ declare global {
 
       // anthropic only
       ANTHROPIC_URL?: string;
+      ANTHROPIC_API?: string;
       ANTHROPIC_API_KEY?: string;
       ANTHROPIC_API_VERSION?: string;
 
@@ -161,7 +162,9 @@ export const getServerSideConfig = () => {
 
   const isAzure = !!process.env.AZURE_URL;
   const isGoogle = !!process.env.GOOGLE_API_KEY;
-  const isAnthropic = !!process.env.ANTHROPIC_API_KEY;
+  const anthropicApiKey =
+    process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API;
+  const isAnthropic = !!anthropicApiKey;
   const isTencent = !!process.env.TENCENT_API_KEY;
 
   const isBaidu = !!process.env.BAIDU_API_KEY;
@@ -205,7 +208,7 @@ export const getServerSideConfig = () => {
     googleUrl: process.env.GOOGLE_URL,
 
     isAnthropic,
-    anthropicApiKey: getApiKey(process.env.ANTHROPIC_API_KEY),
+    anthropicApiKey: getApiKey(anthropicApiKey),
     anthropicApiVersion: process.env.ANTHROPIC_API_VERSION,
     anthropicUrl: process.env.ANTHROPIC_URL,
 

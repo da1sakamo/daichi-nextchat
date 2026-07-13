@@ -25,14 +25,21 @@ function parseApiKey(bearToken: string) {
 }
 
 export function auth(req: NextRequest, modelProvider: ModelProvider) {
-  const authToken = req.headers.get("Authorization") ?? "";
+  const authToken =
+    req.headers.get("Authorization") ?? req.headers.get("x-api-key") ?? "";
 
   // check if it is openai api key or user token
-  const { accessCode, apiKey } = parseApiKey(authToken);
-
-  const hashedCode = md5.hash(accessCode ?? "").trim();
+  let { accessCode, apiKey } = parseApiKey(authToken);
 
   const serverConfig = getServerSideConfig();
+  if (serverConfig.hideUserApiKey && !!apiKey) {
+    console.log(
+      "[Auth] ignore user api key because HIDE_USER_API_KEY is enabled",
+    );
+    apiKey = "";
+  }
+
+  const hashedCode = md5.hash(accessCode ?? "").trim();
   console.log("[Auth] allowed hashed codes: ", [...serverConfig.codes]);
   console.log("[Auth] got access code:", accessCode ? "****" : "");
   console.log("[Auth] hashed access code:", hashedCode);
@@ -43,13 +50,6 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
     return {
       error: true,
       msg: !accessCode ? "empty access code" : "wrong access code",
-    };
-  }
-
-  if (serverConfig.hideUserApiKey && !!apiKey) {
-    return {
-      error: true,
-      msg: "you are not allowed to access with your own api key",
     };
   }
 
